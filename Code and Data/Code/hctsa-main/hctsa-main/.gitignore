@@ -1,0 +1,37 @@
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+*.asv
+
+# HCTSA data files:
+HCTSA*.mat
+
+# Any .mat data files:
+*.mat
+
+# Database configuration
+sql_settings.conf
+
+# Platform-specific mexed files
+*.mexw32
+*.mexw64
+*.mexw64.manifest
+*.mexmaci64
+*.mexa64
+
+# Random stuff
+plugininstall_*.m
+*.log
+
+# TISEAN generates platform-specific files:
+/Toolboxes/Tisean_3.0.1/
+
+# Windows-compiled Physionet file
+sampen_mex.exp

@@ -1,0 +1,57 @@
+The spectral kurtosis (SK) is a fourth-order statistical tool which can indicate the presence of transients and their locations in the frequency domain by "decomposing" the kurtosis of a signal as function of frequency. As such, it helpfully supplements the classical power spectral density.
+
+The matlab function SK_W.m provides the Welch's estimate of the SK.
+
+The following example illustrates its usage for the detection of transients with theoretical spectral content in band [.15 .19]:
+
+load x     	% synthetic signal provided in the pack
+Nw = 2^8;
+Nfft = 2*Nw;
+Noverlap = round(3/4*Nw);
+[SK,M4,M2,f] = SK_W(x,Nfft,Noverlap,Nw);
+
+figure,newplot;
+subplot(211),plot(f(1:Nfft/2),M2(1:Nfft/2)),grid on,
+xlabel('normalized frequency'),xlim([f(1) f(Nfft/2)]),ylim([0 .1]),title('Power spectrum')
+subplot(212),plot(f(1:Nfft/2),SK(1:Nfft/2)),grid on
+xlabel('normalized frequency'),xlim([f(1) f(Nfft/2)]),title('Spectral Kurtosis')
+
+As demonstrated in Ref. [2], the square root of the spectral kurtosis is related to the optimal filter (in the mean-square sense) that extracts the transients of interest. This is achieved as follows:
+
+b = fftshift(real(ifft(SK)));
+xf = fftfilt(b,x);
+
+figure,newplot;
+subplot(211),plot(x,'k'),title('Original signal')
+subplot(212),plot(xf,'k'),title('Filtered signal with square root of spectral kurtosis')
+
+
+References:
+[1] J. Antoni, The spectral kurtosis: a useful tool for characterising nonstationary signals, Mechanical Systems and Signal Processing, Volume 20, Issue 2, 2006, pp.282-307.
+[2] J. Antoni, R. B. Randall, The spectral kurtosis: application to the vibratory surveillance and diagnostics of rotating machines, Mechanical Systems and Signal Processing, Volume 20, Issue 2, 2006, pp.308-331.
+
+——————————————————————————————————————————————————————————————————————————————————————————————
+这段代码用于计算信号的谱峭度（spectral kurtosis）估计。谱峭度是用于描述信号非平稳特性的指标，它是基于信号的四阶矩和二阶矩谱计算得到的。
+
+该函数的输入参数包括：
+
+x：待计算谱峭度的信号序列。
+Nfft：FFT变换的点数，用于计算频域谱。
+Noverlap：相邻窗口的重叠长度。
+Window：窗口函数，用于对每个窗口进行加窗处理，推荐使用汉宁窗。
+该函数的输出包括：
+
+SK：计算得到的谱峭度谱。
+M4：信号的四阶矩谱。
+M2：信号的二阶矩谱。
+f：频率向量。
+函数的主要步骤如下：
+
+对窗口函数进行归一化处理。
+计算输入信号的长度和窗口长度。
+检查输入参数的合法性。
+对输入信号进行分块处理，并计算每个窗口的加窗后的信号的FFT。
+根据FFT结果，计算信号的四阶矩谱和二阶矩谱。
+对计算得到的谱峭度进行归一化处理以降低偏差（减少f=0 mod(1/2)的影响）。
+如果没有输出参数，则绘制计算得到的二阶矩谱和谱峭度谱的图像。
+该函数的算法基于文献中提到的方法，可以用于对非平稳信号的特征提取和故障诊断等应用。

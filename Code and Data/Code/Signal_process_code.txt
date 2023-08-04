@@ -1,0 +1,270 @@
+——————————————————————————————
+%Hurst指数
+% 定义时域信号（使用示例数据）
+data = load('example_data.mat');
+signal = data.signal;
+
+% 计算Hurst指数
+N = length(signal);
+n = floor(log2(N));
+F = zeros(n,1);
+for i = 1:n
+    m = 2^i;
+    y = zeros(m,1);
+    for j = 1:m
+        idx = (j-1)*floor(N/m)+1:j*floor(N/m);
+        y(j) = mean(signal(idx));
+    end
+    z = cumsum(y-mean(y));
+    R = max(z)-min(z);
+    S = std(y);
+    F(i) = log2(R/S);
+end
+p = polyfit(log2(1:2:n)',F(1:2:n),1);
+H = p(1);
+
+% 输出结果
+disp(['Hurst指数为：', num2str(H)])
+——————————————————————————————
+% 定义时域信号（使用示例数据）
+%分形维数
+data = load('example_data.mat');
+signal = data.signal;
+
+% 计算分形维数
+N = length(signal);
+n = floor(log2(N));
+F = zeros(n,1);
+for i = 1:n
+    m = 2^i;
+    y = zeros(m,1);
+    for j = 1:m
+        idx = (j-1)*floor(N/m)+1:j*floor(N/m);
+        y(j) = mean(signal(idx));
+    end
+    z = cumsum(y-mean(y));
+    R = max(z)-min(z);
+    F(i) = log2(R);
+end
+p = polyfit(log2(1:2:n)',log2(F(1:2:n)),1);
+D = p(1);
+
+% 输出结果
+disp(['分形维数为：', num2str(D)])
+——————————————————————————————
+%最大Lyapunov指数
+% 定义时域信号（使用示例数据）
+data = load('example_data.mat');
+signal = data.signal;
+
+% 设置参数
+m = 3; % 建议值为2-4
+tau = 1; % 建议值为1-10
+N = length(signal);
+
+% 通过嵌入定理创建相空间
+X = zeros(m,N-m*tau);
+for i = 1:m
+    X(i,:) = signal((1:N-m*tau)+(i-1)*tau);
+end
+
+% 计算最大Lyapunov指数
+d = zeros(N-m*tau,1);
+for i = 1:N-m*tau
+    for j = 1:N-m*tau
+        d(i) = d(i) + norm(X(:,i)-X(:,j));
+    end
+end
+d = d./(N-m*tau);
+t = (1:N-m*tau)';
+p = polyfit(t,log(d),1);
+lambda = p(1);
+
+% 输出结果
+disp(['最大Lyapunov指数为：', num2str(lambda)])
+——————————————————————————————
+% 示例信号
+t = 0:0.01:10;
+x = sin(pi * t) + cos(0.5 * pi * t);
+
+% 嵌入维数和延迟时间
+embedding_dimension = 5;
+time_delay = 2;
+
+% 计算最大Lyapunov指数（Rosenstein算法）
+addpath('tisean'); % 添加TISEAN库的路径
+max_lyapunov_rosenstein = lyapunov(x, embedding_dimension, time_delay);
+
+% 计算最大Lyapunov指数（Wolf算法）
+max_lyapunov_wolf = lyap_k(x, embedding_dimension, time_delay);
+
+% 输出结果
+fprintf('Rosenstein算法计算的最大Lyapunov指数: %.4f\n', max_lyapunov_rosenstein);
+fprintf('Wolf算法计算的最大Lyapunov指数: %.4f\n', max_lyapunov_wolf);
+
+——————————————————————————————
+%%一个基于BBA算法的Lyapunov指数谱的Matlab计算程序示例
+function lyap_spec = bba_lyapunov_spec(x, n, m, step_size, num_steps, num_trials)
+% Inputs:
+% x: time series data
+% n: embedding dimension
+% m: time delay
+% step_size: step size for integrating the variational equation
+% num_steps: number of integration steps
+% num_trials: number of trials to average over
+
+% Output:
+% lyap_spec: Lyapunov exponent spectrum
+
+% Initialize variables
+N = length(x);
+lyap_spec = zeros(n, 1);
+
+for i = 1:num_trials
+    % Randomly select a starting point
+    start_idx = randi(N-n*m);
+    x0 = x(start_idx:start_idx+(n-1)*m);
+    
+    % Construct trajectory matrix
+    X = zeros(n, num_steps);
+    for j = 1:n
+        X(j,:) = x(start_idx+(j-1)*m:start_idx+(j-1)*m+num_steps-1);
+    end
+    
+    % Compute Jacobian matrix
+    J = zeros(n);
+    for j = 1:n
+        x_perturb = x0;
+        x_perturb(j) = x_perturb(j) + 1e-6;
+        [~,x_traj] = ode45(@(t,x) bba_dynamics(t,x,x_perturb,step_size,num_steps), [0 step_size*num_steps], X(:));
+        J(:,j) = (x_traj(end,:)' - X(:)) ./ 1e-6;
+    end
+    
+    % Compute eigenvalues of Jacobian matrix
+    eig_val = eig(J);
+    
+    % Compute Lyapunov exponents
+    for j = 1:n
+        lyap_spec(j) = lyap_spec(j) + log(abs(eig_val(j)));
+    end
+end
+
+% Average over trials
+lyap_spec = lyap_spec / num_trials / step_size;
+
+% Sort in descending order
+lyap_spec = sort(lyap_spec, 'descend');
+
+end
+
+function dxdt = bba_dynamics(t,x,x_perturb,step_size,num_steps)
+% BBA dynamics
+% x: state vector
+% x_perturb: perturbed state vector
+% step_size: step size for integrating the variational equation
+% num_steps: number of integration steps
+
+N = length(x);
+X = reshape(x, [N/num_steps, num_steps]);
+X_perturb = reshape(x_perturb, [N/num_steps, num_steps]);
+
+% Compute variational equation
+for i = 1:num_steps
+    J = bba_jacobian(X(:,i), X_perturb(:,i));
+    dxdt(:,i) = J * X(:,i);
+end
+
+% Reshape to vector
+dxdt = dxdt(:);
+
+% Integrate over step size
+dxdt = dxdt / norm(dxdt);
+dxdt = dxdt * (step_size / num_steps);
+
+end
+
+function J = bba_jacobian(x,x_perturb)
+% Jacobian matrix for BBA dynamics
+% x: state vector
+% x_perturb: perturbed state vector
+
+alpha = 1.4;
+beta = 0.3;
+gamma = 1.5;
+
+J = [0 -1 1 0; ...
+    alpha-x(3)^2 -beta 0 -2*x(3); ...
+    x(2) 0 -gamma x(1); ...
+    -x_perturb(2) 0 x_perturb(1) 0];
+
+end
+——————————————————————————————————————
+%信号白化
+% 假设你的输入信号是x，采样频率为fs
+% 调整下面的参数以满足你的需求
+order = 10; % AR 模型的阶数
+r = 0.99; % 白化滤波器的相关系数
+
+% 计算信号的自相关函数
+[Rxx, lag] = xcorr(x, 'coeff');
+
+% 截取自相关函数的正半轴
+Rxx = Rxx(lag >= 0);
+
+% 估计 AR 模型参数
+[a, ~, ~] = aryule(Rxx, order);
+
+% 计算白化滤波器的系数
+b = sqrt(1 - r^2);
+
+% 使用白化滤波器处理输入信号
+x_whitened = filter(b, a, x);
+
+% 绘制原始信号和白化后的信号
+t = (0:length(x)-1) * (1/fs); % 时间轴
+figure;
+subplot(2,1,1);
+plot(t, x);
+title('原始信号');
+xlabel('时间 (秒)');
+ylabel('幅度');
+subplot(2,1,2);
+plot(t, x_whitened);
+title('白化后的信号');
+xlabel('时间 (秒)');
+ylabel('幅度');
+——————————————————————————————————————
+%3 sigma准则进行信号预处理
+% 生成样例数据
+data = randn(1, 1000);
+% 添加噪声
+noise = randn(1, 1000);
+data_noisy = data + noise;
+
+% 用 3 sigma 准则进行预处理
+mu = mean(data_noisy);
+sigma = std(data_noisy);
+upper_bound = mu + 3 * sigma;
+lower_bound = mu - 3 * sigma;
+data_aligned = data_noisy;
+data_aligned(data_noisy > upper_bound) = upper_bound;
+data_aligned(data_noisy < lower_bound) = lower_bound;
+
+% 绘制结果比较图
+figure;
+subplot(2,1,1);
+plot(data_noisy);
+xlabel('Sample');
+ylabel('Amplitude');
+title('Noisy Data');
+
+subplot(2,1,2);
+plot(data_aligned);
+xlabel('Sample');
+ylabel('Amplitude');
+title('Aligned Data');
+
+% 计算误差
+error = rms(data_aligned - data);
+fprintf('对齐前后均方误差: %.4f\n', rms(data_noisy - data));
+fprintf('对齐误差: %.4f\n', error);
