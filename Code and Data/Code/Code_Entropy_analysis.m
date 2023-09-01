@@ -1,4 +1,5 @@
 %次程序用来计算样本熵、近似熵、排列熵、模糊熵
+%0901修改
 clc;clear;close all;
 A_Sam_en=[];B_Per_en=[];C_Fuz_en=[];D_App_en=[];Entroy=[];
 for i2=1:3

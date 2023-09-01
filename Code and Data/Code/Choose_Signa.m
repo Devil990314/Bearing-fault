@@ -1,4 +1,5 @@
 function [data_all,data, fs,fr,Fre_Bearing]=Choose_Signa(i)
+%0901修改
 switch i
     case 1
         disp("------------开始分析 振动信号(b216) ------------ ");
