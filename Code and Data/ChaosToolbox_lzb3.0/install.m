@@ -1,7 +1,10 @@
 function [] = install()
 
 addpath([pwd,'\BoxDimension_2D']);
-addpath([pwd,'\BoxDimension_TS']);
+
+addpath([pwd,'\BoxDimension_2D']);
+
+addpath('E:\Bearing Fault\Code and Data\ChaosToolbox_lzb3.0\BoxDimension_TS');
 addpath([pwd,'\C-C Method']);
 addpath([pwd,'\C-C Method Improved']);
 addpath([pwd,'\ChaosAttractors']);

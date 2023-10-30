@@ -4,7 +4,7 @@ clc;clear;close all;
 disp("------------分析信号选择------------");
 disp("------------1.振动信号（b216）  2.电流信号（b216）  3.CWRU信号  4.Paderborn信号 5.2023电流信号------------");
 i_1=input("------------请选择要分析的信号(1 or 2 or 3 or 4 or 5)： ");
-[x,fs,fr,Fre_Bearing]=Choose_Signa(i_1);N=length(x);%加载数据
+[x_all,x,fs,fr,Fre_Bearing]=Choose_Signa(i_1);N=length(x);%加载数据
 %选择要分析的数据
 sizex=size(x);
 if sizex(:,2) ~= 1

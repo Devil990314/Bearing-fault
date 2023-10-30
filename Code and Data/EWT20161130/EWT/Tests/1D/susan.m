@@ -1,3 +1,4 @@
+clc;close all;clear;
 %load data
 % load S1_GPi_only_data
 % D = struct2cell(Data);

@@ -1,4 +1,12 @@
 function [LE,K] = LyapunovSpectrum_BBA(X,fs,t,t2,dl,dg,o,p)
+% % 默认参数
+% %fs = 1;                   % 采样频率
+% t = 1;                    % 重构时延
+% t2 = 1;                   % 迭代时延
+% dl = 2;                   % 局部嵌入维
+% dg = 4;                   % 全局嵌入维
+% o = 2;                    % 多项式拟合阶数    
+% p = 1;                    % 序列平均周期 (不考虑该因素时 p = 1)
 
 if nargin<8
     p = 0;

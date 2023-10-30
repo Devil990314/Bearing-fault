@@ -16,13 +16,13 @@
 % Institution: UCLA - Department of Mathematics
 % Year: 2014
 % Version: 2.0
-clear all
+clc;close all;clear;
 
 %% User setup
 
-% Choose the signal you want to analyze
+% Choose the signal you want to analyze 
 % (sig1,sig2,sig3,sig4=ECG,sig5=seismic,sig6=EEG)
-signal = 'sig1';
+signal = 'sig5';
 params.SamplingRate = -1; %put -1 if you don't know the sampling rate
 %params.SamplingRate = 4000; %put -1 if you don't know the sampling rate
 channel = 50; %for EEG only
@@ -40,7 +40,7 @@ params.sigmaFilter = 1.5;
 % adaptive,adaptivereg,scalespace)
 params.detect = 'scalespace';
 params.typeDetect='otsu'; %for scalespace:otsu,halfnormal,empiricallaw,mean,kmeans
-params.N = 3; % maximum number of bands
+params.N = 5; % maximum number of bands
 params.completion = 0; % choose if you want to force to have params.N modes
                        % in case the algorithm found less ones (0 or 1)
 %params.InitBounds = [4 8 13 30];
